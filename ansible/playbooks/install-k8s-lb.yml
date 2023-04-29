@@ -1,0 +1,43 @@
+- name: Install packages for Kubernetes lb
+  hosts: "{{ host_group }}"
+  become: true
+  tasks:
+    - name: Install HAproxy
+      apt:
+        name:  haproxy
+        state: present
+
+    - name: Check if config is already updated
+      command: grep "frontend kubernetes" /etc/haproxy/haproxy.cfg
+      failed_when: false
+      register: _config_is_managed
+
+    - name: Display result
+      debug:
+        var: _config_is_managed.stdout
+
+    - name: Create HAproxy config
+      blockinfile:
+        path: /etc/haproxy/haproxy.cfg
+        block: |
+          frontend kubernetes
+          bind 10.10.104.16:6443
+          option tcplog
+          mode tcp
+          default_backend kubernetes-master-nodes
+          backend kubernetes-master-nodes
+          mode tcp
+          balance roundrobin
+          option tcp-check
+          server kubernetes-master1 10.10.104.19:6443 check fall 3 rise 2
+          server kubernetes-master2 10.10.104.18:6443 check fall 3 rise 2
+          server kubernetes-master3 10.10.104.15:6443 check fall 3 rise 2
+        marker: "# MANAGED BY ANSIBLE"
+      when: _config_is_managed.stdout == ""
+
+    - name: Restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted
+      become: true
+      when: _config_is_managed.stdout == ""

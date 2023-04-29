@@ -1,0 +1,18 @@
+
+1. Initiate the kubernetes master
+    kubeadm init --config=/var/kubeadm-config.yaml --upload-certs
+2. Set up kube config:
+     mkdir -p $HOME/.kube
+     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+3. Add Weave CNI
+    kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+4. Make the second master node to join the cluster:
+    kubeadm join 10.10.104.9:6443 --token REDACTED \
+    --discovery-token-ca-cert-hash sha256:REDACTED \
+    --control-plane --certificate-key REDACTED]
+5. Make worker nodes to join the cluster:
+    kubeadm join 10.10.104.9:6443 --token REDACTED \
+    --discovery-token-ca-cert-hash sha256:REDACTED
+6. Deploy Metrics Server
+   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml

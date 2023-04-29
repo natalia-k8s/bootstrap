@@ -1,0 +1,15 @@
+[kubernetes_master]
+kubernetes-master-1 ansible_host=34.91.28.110
+kubernetes-master-2 ansible_host=35.204.17.115
+kubernetes-master-3 ansible_host=34.141.166.248
+
+[kubernetes_worker]
+kubernetes-worker-1 ansible_host=34.147.72.172
+kubernetes-worker-2 ansible_host=34.32.140.95
+
+[kubernetes]
+kubernetes-master
+kubernetes-worker
+
+[kubernetes_lb]
+kubernetes-lb ansible_host=34.141.130.197
